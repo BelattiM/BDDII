@@ -1,0 +1,10 @@
+db.alumnos.aggregate([
+    {
+        $lookup: {
+            from: "cursos",
+            localField: "id_curso",
+            foreignField: "_id",
+            as: "detalle_cursos"
+        }
+    }
+]);

@@ -1,0 +1,11 @@
+db.createUser({
+    user: "nombre_usuario",
+    pwd: "contra123",
+    roles: [{role: "readWrite", db: "empresa"}]
+})
+
+// Crear el backup
+// mongodump --db empresa --out /ruta/backupsMongo
+
+// Restaurar el backup
+// mongorestore --db empresa /ruta/backupsMongo/empresa

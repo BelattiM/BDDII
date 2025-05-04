@@ -1,0 +1,11 @@
+db.clientes.insertMany([
+    {nombre: "Pablo", apellido: "Picasso", direccion: "Alem 234" },
+    {nombre: "Mickey", apellido: "Mouse", direccion: "Orlando 986" },
+    {nombre: "Walter", apellido: "Disney", direccion: "Orlando 999" },
+    {nombre: "Ricardo", apellido: "Fort", direccion: "Nordelta 420" },
+    {nombre: "Gregorio", apellido: "Casa", direccion: "Plainsboro 4053" },
+]);
+
+db.clientes.createIndex({
+    apellido: 1, nombre: 1 
+});

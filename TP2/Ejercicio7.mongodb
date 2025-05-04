@@ -1,0 +1,12 @@
+db.cursos.insertMany([
+    {_id: 1, nombre: "MongoDB Basico con Ramoscelli"},
+    {_id: 2, nombre: "HTML, CSS y JS basico con Sergio"},
+    {_id: 3, nombre: "HTML, CSS y JS avanzado con el Gian"}
+])
+
+db.alumnos.insertMany([
+    {nombre: "Ramiro Pizzico", id_curso:[2, 3]},
+    {nombre: "Ana Paula Schechtel", id_curso:[1, 2]},
+    {nombre: "Facundo Tischler", id_curso:[1, 3]},
+    {nombre: "Mateo Bellati", id_curso:[2, 3]},
+])
