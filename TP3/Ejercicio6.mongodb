@@ -1,0 +1,11 @@
+use ('tiendaOnline');
+
+db.ventas.aggregate(
+    {$group: {_id: {$month: "$fecha" }, totalVendido: {$sum: "$total"}}}
+);
+
+db.ventas.aggregate([
+    {$group: {_id: {$dayOfWeek: "$fecha" }, totalVendido: {$sum: "$total"}}},
+    {$sort: {totalVendido: -1}},
+    {$limit: 1}
+])

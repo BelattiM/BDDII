@@ -1,0 +1,109 @@
+//Crear un sistema de recomendación básico que, para un cliente dado, recomiende productos basándose en:
+//
+//Productos de la misma categoría que ha comprado anteriormente
+//Productos populares (más vendidos) que no ha comprado aún
+//Productos mejor valorados en las categorías de su interés
+use ('tiendaOnline');
+
+db.ventas.aggregate([
+    //Lookup para usar los datos de la coleccion productos
+    {$lookup: {
+        from: "productos",
+        localField: "producto_id",
+        foreignField: "_id",
+        as: "producto"
+    }},
+    {$unwind: "$producto" },
+    //creamos 3 pipelines: 1.Agrupamos las categorias y los productos comprados por cliente; 2. creamos un array de los productos mas populares (mas comprados); 3. creamos un array de los productos mejor valorados por categoria  
+    {$facet: {
+        clientes: [
+            {$group: {
+                _id: "$cliente.nombre",
+                productosComprados: { $addToSet: "$producto.nombre" },
+                categoriasCompradas: { $addToSet: "$producto.categoria" }
+            }},
+            {$project: {
+                cliente: "$_id",
+                productosComprados: 1,
+                categoriasCompradas: 1
+            }}
+        ],
+        populares: [
+            {$group: {
+                _id: "$producto.nombre",
+                categoria: { $first: "$producto.categoria" },
+                totalVendidas: { $sum: "$cantidad" }
+            }},
+            {$project:{
+                _id:0,
+                nombre: "$_id",
+                categoria:1,
+                totalVendidas:1
+            }},
+            {$sort: { totalVendidas: -1 } }
+        ],
+        valorados: [
+            {$unwind: "$producto.valoraciones"},
+            {$group: {
+                _id: "$producto.nombre",
+                categoria: { $first: "$producto.categoria" },
+                promedio: { $avg: "$producto.valoraciones.puntuacion" }
+            }},
+            {$project:{
+                _id:0,
+                nombre: "$_id",
+                categoria:1,
+                promedio:1
+            }},
+            {$sort: { promedio: -1 }}
+        ]
+    }},
+    //hacemos unwind de clientes para poder procesar los datos
+    {$unwind: "$clientes"},
+    {$project: {
+        cliente: "$clientes.cliente",
+        productosRecomendadosPorCategoria: {
+            //filtramos el array populares y nos quedamos con los productos que cada cliente no compro pero que coinciden con las categorias en las que si compro
+            $filter: {
+                input: "$populares",
+                as: "p",
+                cond: {
+                    $and: [
+                        {$in: ["$$p.categoria", "$clientes.categoriasCompradas"] },
+                        {$not: { $in: ["$$p._id", "$clientes.productosComprados"] } }
+                    ]
+                }
+            }
+        },
+        productosPopularesNoComprados: {
+            //filtramos el array populares y nos quedamos con los productos mas vendidos que cada cliente no compro
+            $filter: {
+                input: "$populares",
+                as: "p",
+                cond: {
+                    $not: { $in: ["$$p._id", "$clientes.productosComprados"] }
+                }
+            }
+        },
+        productosMejorValoradosPorCategoria: {
+            //filtramos el array valorados y nos quedamos con los productos mas valorados que cada cliente no compro pero que coinciden con las categorias en las que si compro 
+            $filter: {
+                input: "$valorados",
+                as: "v",
+                cond: {
+                    $and: [
+                        { $in: ["$$v.categoria", "$clientes.categoriasCompradas"] },
+                        { $not: { $in: ["$$v._id", "$clientes.productosComprados"] } }
+                    ]
+                }
+            }
+        }
+    }},
+    //proyeccion final, usamos $slice para mostrar solo los 3 productos mas importantes de cada seccion
+    {$project: {
+        cliente: 1,
+        productosRecomendadosPorCategoria: {$slice: ["$productosRecomendadosPorCategoria", 3]},
+        productosPopularesNoComprados: {$slice: ["$productosPopularesNoComprados", 3]},
+        productosMejorValoradosPorCategoria: {$slice: ["$productosMejorValoradosPorCategoria", 3]}
+    }}
+])  

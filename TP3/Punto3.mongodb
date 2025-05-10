@@ -1,0 +1,83 @@
+// Crear un informe de clientes que incluya:
+// 
+// Total gastado por cada cliente
+// Número de compras realizadas
+// Producto favorito (el que más ha comprado)
+// Categoría preferida (donde más ha gastado)
+// Fecha de primera y última compra
+
+use ('tiendaOnline');
+
+db.ventas.aggregate([
+    {$lookup: {
+        from:"productos",
+        localField: "producto_id",
+        foreignField: "_id",
+        as: "dataProductos"
+    }},
+    //Lookup para traer la coleccion productos, unwind para deconstruir y usar los datos
+    {$unwind: "$dataProductos"},
+    //Agrupamos por cliente, producto y categoria de la compra, sumamos cantidad (de producto), total gastado($), y cantidad de compras realizadas. Obtenemos la primer y ultima fechas de compra de cada division, no de cada cliente.
+    {$group: {
+        _id:{
+            cliente: "$cliente.nombre",
+            productoComprado: "$dataProductos.nombre",
+            categoria:"$dataProductos.categoria",
+        },
+        cantidad:{$sum: "$cantidad"},
+        totalGastado:{$sum: "$total"},
+        comprasRealizadas: {$sum: 1},
+        primeraCompra:{$min: "$fecha"},
+        ultimaCompra:{$max: "$fecha"}
+    }},
+    //Ordenamos por cliente y cantidad comprada de producto.
+    {$sort:{"_id.cliente" :1, cantidad:-1}},
+    //Agrupamos solo por cliente, productoFav toma el producto de mayor cantidad comprada, creamos un array categorias que tiene el nombre y el total gastado de cada categoria, sumamos los totales gastados de cada cliente (totalGastado), y obtenemos la primer y ultima fecha de compra de cada cliente. 
+    {$group: {
+        _id: "$_id.cliente",
+        productoFav:{$first: "$_id.productoComprado"},
+        categorias:{$push:{categoria: "$_id.categoria", gastadoEnCategoria: {$sum: "$totalGastado"}}},
+        comprasRealizadas: {$sum: "$comprasRealizadas"},
+        totalGastado:{$sum: "$totalGastado"},
+        primeraCompra:{$min: "$primeraCompra"},
+        ultimaCompra:{$max: "$ultimaCompra"}
+    }},
+    //Decontstruimos el array "categorias"
+    {$unwind: "$categorias"},
+    //Agrupamos por cliente y categoria, sumamos los totales gastados por categoria (en caso de que haya 2 compras de la misma categoria), y mantenemos los otros campos del group anterior usando $first.
+    {$group: {
+        _id:{
+            cliente: "$_id",
+            categoria:"$categorias.categoria"
+        },
+        gastadoEnCategoria:{$sum: "$categorias.gastadoEnCategoria"},
+        productoFav:{$first: "$productoFav"},
+        comprasRealizadas: {$first: "$comprasRealizadas"},
+        totalGastado:{$first: "$totalGastado"},
+        primeraCompra:{$first: "$primeraCompra"},
+        ultimaCompra:{$first: "$ultimaCompra"}
+    }},
+    //Ordenamos por cliente y luego por total gastado en categoria.
+    {$sort: {"_id.cliente": 1, gastadoEnCategoria:-1}},
+    //Finalmente agrupamos por cliente, categoriaFav toma el valor de la categoria en la que mas se gasto, y nuevamente mantenemos los campos del group anterior con $first
+    {$group: {
+        _id: "$_id.cliente",
+        categoriaFav: {$first: "$_id.categoria"},
+        productoFav:{$first: "$productoFav"},
+        comprasRealizadas: {$first: "$comprasRealizadas"},
+        totalGastado:{$first: "$totalGastado"},
+        primeraCompra:{$first: "$primeraCompra"},
+        ultimaCompra:{$first: "$ultimaCompra"}
+    }},
+    //Proyeccion final
+    {$project: {
+        _id:0,
+        cliente:"$_id",
+        categoriaFav:1,
+        productoFav:1,
+        comprasRealizadas:1,
+        totalGastado:1,
+        primeraCompra:1,
+        ultimaCompra:1,
+    }},
+]);

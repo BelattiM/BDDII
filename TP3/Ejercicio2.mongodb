@@ -1,0 +1,16 @@
+use ('tiendaOnline');
+
+db.productos.aggregate([
+    { $group: {
+        _id: "$categoria", 
+        precioAvg: { $avg: "$precio"}, 
+        precioMax: { $max: "$precio"}, 
+        precioMin: { $min: "$precio"} } }
+    ])
+
+db.ventas.aggregate([
+    { $group: {
+        _id: "$cliente.pais", 
+        cantidadTransacciones: {$sum : 1 },
+        montoTotalVentas: {$sum : "$total"} } }
+])

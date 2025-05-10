@@ -1,0 +1,17 @@
+//Crear un pipeline que obtenga los productos más valorados (puntuación promedio más alta) con al menos 2 valoraciones.
+
+use ('tiendaOnline');
+
+db.productos.aggregate([
+    //Hacemos un match para obtener solo los productos con 2 o mas valoraciones
+    {$match: {$expr: {$gte:[{$size: "$valoraciones"}, 2]}}},
+    //Mostramos el nombre del producto y su puntuacion promedio
+    {$project: {
+        _id:0,
+        nombre:1,
+        puntuacionPromedio:{$avg:"$valoraciones.puntuacion"}
+    }},
+    //Ordenamos por puntuacion promedio mas alta 
+    {$sort: {puntuacionPromedio: -1}}
+    
+])
