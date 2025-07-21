@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const connectDb = require('./config/database.js'); // coneccion base de datos 
+const crearReserva = require('./pruebas.js'); // para probar la base de datos y modelos
 
 
 var indexRouter = require('./routes/index');
