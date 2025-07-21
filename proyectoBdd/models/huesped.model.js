@@ -64,4 +64,12 @@ const updateHuespedModel = async (idHuesped, nuevoHuesped) =>{
         console.error('Error al actualizar Huesped: ', error.message);
         throw error;
     }
+};
+
+module.exports = {
+    getHuespedModel,
+    getHuespedesModel,
+    createHuespedModel,
+    deleteHuespedModel,
+    updateHuespedModel
 }
