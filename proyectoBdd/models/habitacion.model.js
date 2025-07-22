@@ -1,5 +1,4 @@
 const Habitacion = require('./schemas/habitacion.entity');
-const Reserva = require('./schemas/reservas.entity');
 
 // Buscar todas las habitaciones
 const getHabitacionesModel = async () => {
@@ -81,41 +80,6 @@ const updateHabitacionModel = async (idHabitacion, nuevaHabitacion) => {
     }
 };
 
-const getHabitacionesDisponibles = async (fechaEntrada, fechaSalida, tipo, precioMax) => {
-    try {
-    const fechaEntradaDate = new Date(fechaEntrada);
-    const fechaSalidaDate = new Date(fechaSalida);
-
-    const reservasSuperpuestas = await Reserva.find({
-        $or: [
-        {
-            fechaEntrada: { $lte: fechaSalidaDate },
-            fechaSalida: { $gte: fechaEntradaDate }
-        }
-        ]
-    });
-
-    const habitacionesReservadasIds = reservasSuperpuestas.map(r => r.habitacion);
-
-    const query = {
-        _id: { $nin: habitacionesReservadasIds }
-    };
-
-    if (tipo) {
-        query.tipo = tipo;
-    }
-
-    if (precioMax) {
-        query.precio = { $lte: parseFloat(precioMax) };
-    }
-
-    const habitacionesDisponibles = await Habitacion.find(query);
-    return habitacionesDisponibles;
-    } catch (error) {
-    console.error('Error al consultar habitaciones disponibles:', error.message);
-    throw error;
-    }
-};
 
 module.exports = {
     getHabitacionesModel,

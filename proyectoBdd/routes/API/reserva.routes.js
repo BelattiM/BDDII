@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    getReservasModel,
-    getReservaModel,
+    registrarCheckIn,
+    getReservasHuesped,
+    cancelarReservaModel,
     createReservaModel,
-    updateReservaModel,
-    deleteReservaModel
-} = require('../../models/schemas/reservas.entity');
+    getHabitacionesDisponibles,
+    getReservasModel,
+    getReservaIdModel
+} = require('../../models/reservas.model');
 
 // Obtener todas las reservas
 router.get('/', async (req, res) => {
@@ -22,7 +24,7 @@ router.get('/', async (req, res) => {
 // Obtener reserva por ID
 router.get('/:id', async (req, res) => {
     try {
-    const reserva = await getReservaModel(req.params.id);
+    const reserva = await getReservaIdModel(req.params.id);
     if (reserva) {
         res.json(reserva);
     } else {
@@ -69,6 +71,25 @@ router.delete('/:id', async (req, res) => {
     }
     } catch (err) {
     res.status(500).json({ message: 'Error al eliminar reserva', error: err.message });
+    }
+});
+router.put('/checkin/:reservaId', async (req, res) => {
+    try {
+        const resultado = await registrarCheckIn(req.params.reservaId);
+        res.json(resultado);
+    } catch (err) {
+        res.status(500).json({ message: 'Error en check-in', error: err.message });
+    }
+});
+
+// Obtener historial de reservas del huésped
+// Ejemplo: GET /api/huespedes/historial/:huespedId
+router.get('/historial/:huespedId', async (req, res) => {
+    try {
+        const historial = await getReservasHuesped(req.params.huespedId);
+        res.json(historial);
+    } catch (err) {
+        res.status(500).json({ message: 'Error al obtener historial', error: err.message });
     }
 });
 

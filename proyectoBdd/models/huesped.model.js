@@ -1,5 +1,4 @@
 const Huesped = require('./schemas/huesped.entity');
-const Reserva = require('./schemas/reservas.entity');
 
 const getHuespedesModel = async () => {
     try {
@@ -72,39 +71,10 @@ const updateHuespedModel = async (idHuesped, nuevoHuesped) => {
     }
 };
 
-const registrarCheckIn = async (reservaId) => {
-    try {
-        // Buscar la reserva
-        const reserva = await Reserva.findById(reservaId);
-        if (!reserva) {
-            throw new Error('Reserva no encontrada');
-        }
-        reserva.estado = 'en servicio'; 
-        reserva.fechaIngreso = new Date();
-        await reserva.save();
-        return { message: 'Check-in registrado correctamente', reserva };
-    } catch (error) {
-        console.error('Error en registrar check-in:', error.message);
-        throw error;
-    }
-};
-
-const getReservasHuesped = async (huespedId) => {
-    try {
-        const reservas = await Reserva.find({ 'huesped._id': huespedId });
-        return reservas;
-    } catch (error) {
-        console.error('Error al obtener reservas del huésped:', error.message);
-        throw error;
-    }
-};
-
 module.exports = {
     getHuespedesModel,
     getHuespedModel,
     createHuespedModel,
     deleteHuespedModel,
-    updateHuespedModel,
-    registrarCheckIn,
-    getReservasHuesped
+    updateHuespedModel
 };

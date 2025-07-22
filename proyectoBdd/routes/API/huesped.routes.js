@@ -6,9 +6,7 @@ const {
     getHuespedModel,
     createHuespedModel,
     updateHuespedModel,
-    deleteHuespedModel,
-    registrarCheckIn,
-    getReservasHuesped
+    deleteHuespedModel
 } = require('../../models/huesped.model');
 
 // Obtener todos los huéspedes
@@ -76,24 +74,6 @@ router.delete('/:id', async (req, res) => {
 
 // Registrar entrada del huésped (check-in)
 // Ejemplo: PUT /api/huespedes/checkin/:reservaId
-router.put('/checkin/:reservaId', async (req, res) => {
-    try {
-        const resultado = await registrarCheckIn(req.params.reservaId);
-        res.json(resultado);
-    } catch (err) {
-        res.status(500).json({ message: 'Error en check-in', error: err.message });
-    }
-});
 
-// Obtener historial de reservas del huésped
-// Ejemplo: GET /api/huespedes/historial/:huespedId
-router.get('/historial/:huespedId', async (req, res) => {
-    try {
-        const historial = await getReservasHuesped(req.params.huespedId);
-        res.json(historial);
-    } catch (err) {
-        res.status(500).json({ message: 'Error al obtener historial', error: err.message });
-    }
-});
 
 module.exports = router;
