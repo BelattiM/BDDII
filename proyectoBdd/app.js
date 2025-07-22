@@ -9,11 +9,10 @@ const crearReserva = require('./pruebas.js'); // para probar la base de datos y 
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-const habitacionRoutes = require('./routes/API/habitaciones');
-const apiHuespedes = require('./routes/API/huespedes');
-const apiReservas = require('./routes/API/reservas');
-const reportesRouter = require('./routes/API/reportes');
-const reservasRouter = require('./routes/API/reservas');
+const habitacionRouter = require('./routes/API/habitacion.routes.js');
+const huespedesRouter = require('./routes/API/huesped.routes.js');
+const reservasRouter = require('./routes/API/reserva.routes.js');
+const reportesRouter = require('./routes/API/reportes.routes.js');
 
 var app = express();
 connectDb(); //ejecuta la coneccion a la base de datos
@@ -30,13 +29,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/API/habitaciones', habitacionRoutes);
-app.use('/API/huespedes', apiHuespedes);
-app.use('/API/reservas', apiReservas);
+app.use('/API/habitaciones', habitacionRouter);
+app.use('/API/huespedes', huespedesRouter);
+app.use('/API/reservas', reservasRouter);
 
 // Aquí agregamos las rutas nuevas
 app.use('/API/reportes', reportesRouter);
-app.use('/API/reservas', reservasRouter); // si aún no estaba, ya la tienes arriba, no doble la línea
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
